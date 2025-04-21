@@ -48,6 +48,7 @@
         <label for="scanTypeFilter" class="form-label">Filter by Scan Type:</label>
         <select id="scanTypeFilter" class="form-select">
           <option value="all">All</option>
+          
         </select>
       </div>
     </div>
@@ -170,7 +171,7 @@
           output += `
             <div class="card mb-4 shadow-sm">
               <div class="card-header bg-light">
-                <h5 class="mb-0">📦 Account: <strong>${accId}</strong> <span class="text-muted"> - ${acc.name}</span></h5>
+                <h5 class="mb-0">📦 Account: <strong>${acc.name}</strong> <span class="text-muted"> - ${accId}</span></h5>
               </div>
               <div class="card-body p-0">
                 <table class="table table-sm table-hover mb-0">
@@ -190,10 +191,14 @@
       }
 
       const scanTypeSelect = document.getElementById('scanTypeFilter');
+      const currentValue = scanTypeSelect.value;  // ✅ Store current selection
+
       scanTypeSelect.innerHTML = '<option value="all">All</option>';
       Array.from(scanTypes).sort().forEach(type => {
-        scanTypeSelect.innerHTML += `<option value="${type}">${type}</option>`;
+        const selected = (type === currentValue) ? 'selected' : '';
+        scanTypeSelect.innerHTML += `<option value="${type}" ${selected}>${type}</option>`;
       });
+
 
       document.getElementById('output').innerHTML = summaryHTML + output;
     }
