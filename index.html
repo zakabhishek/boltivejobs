@@ -23,23 +23,33 @@
     .card-header h5 {
       font-size: 1.1rem;
     }
-    .filter-section {
-      margin-bottom: 20px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 class="mb-4 text-center">📊 Job Status Dashboard</h2>
-    <input type="file" id="fileInput" class="form-control mb-3" accept=".json">
-    <div class="filter-section">
-      <label for="statusFilter" class="form-label">Filter by Job Status:</label>
-      <select id="statusFilter" class="form-select w-auto">
-        <option value="all">All</option>
-        <option value="complete">Complete</option>
-        <option value="fail">Failed</option>
-        <option value="pending">Pending</option>
-      </select>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">📊 Job Status Dashboard</h2>
+      <div>
+        <button class="btn btn-sm btn-outline-dark me-2" id="toggleThemeBtn">🌓 Toggle Dark Mode</button>
+      </div>
+    </div>
+        <input type="file" id="fileInput" class="form-control mb-3" accept=".json">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <label for="statusFilter" class="form-label">Filter by Job Status:</label>
+        <select id="statusFilter" class="form-select">
+          <option value="all">All</option>
+          <option value="complete">Complete</option>
+          <option value="fail">Failed</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="scanTypeFilter" class="form-label">Filter by Scan Type:</label>
+        <select id="scanTypeFilter" class="form-select">
+          <option value="all">All</option>
+        </select>
+      </div>
     </div>
     <div id="output"></div>
   </div>
@@ -58,12 +68,19 @@
     });
 
     document.getElementById('statusFilter').addEventListener('change', function() {
-      const selected = this.value;
-      renderDashboard(globalData, selected);
+      renderDashboard(globalData, this.value);
+    });
+
+    document.getElementById('scanTypeFilter').addEventListener('change', function() {
+      const status = document.getElementById('statusFilter').value;
+      renderDashboard(globalData, status);
     });
 
     function renderDashboard(data, statusFilter) {
       if (!data.length) return;
+
+      const selectedScanType = document.getElementById('scanTypeFilter')?.value || 'all';
+      const scanTypes = new Set();
 
       let complete = 0, failed = 0, pending = 0, total = 0;
       let grouped = {};
@@ -135,7 +152,9 @@
               match = (statusFilter === 'pending' || statusFilter === 'all');
             }
 
-            if (match) {
+            scanTypes.add(job.scan_type);
+
+            if (match && (selectedScanType === 'all' || job.scan_type === selectedScanType)) {
               tableRows += `
                 <tr>
                   <td>${persona.name}</td>
@@ -151,7 +170,7 @@
           output += `
             <div class="card mb-4 shadow-sm">
               <div class="card-header bg-light">
-                <h5 class="mb-0">📦 Account: <strong>${acc.name}</strong> <span class="text-muted"> - ${accId}</span></h5>
+                <h5 class="mb-0">📦 Account: <strong>${accId}</strong> <span class="text-muted"> - ${acc.name}</span></h5>
               </div>
               <div class="card-body p-0">
                 <table class="table table-sm table-hover mb-0">
@@ -170,8 +189,27 @@
         }
       }
 
+      const scanTypeSelect = document.getElementById('scanTypeFilter');
+      scanTypeSelect.innerHTML = '<option value="all">All</option>';
+      Array.from(scanTypes).sort().forEach(type => {
+        scanTypeSelect.innerHTML += `<option value="${type}">${type}</option>`;
+      });
+
       document.getElementById('output').innerHTML = summaryHTML + output;
     }
+    // Toggle Dark Mode
+document.getElementById('toggleThemeBtn').addEventListener('click', () => {
+  document.body.classList.toggle('bg-dark');
+  document.body.classList.toggle('text-light');
+  document.querySelectorAll('.card').forEach(card => {
+    card.classList.toggle('bg-dark');
+    card.classList.toggle('text-light');
+  });
+  document.querySelectorAll('.table').forEach(table => {
+    table.classList.toggle('table-dark');
+  });
+});
+
   </script>
 </body>
 </html>
